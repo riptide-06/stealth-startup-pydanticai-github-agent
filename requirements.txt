@@ -1,0 +1,20 @@
+# Skape submission — PydanticAI GitHub MCP triage agent
+# Exact versions verified working together on Python 3.11 (min 3.10).
+#
+# IMPORTANT (see SKAPE_UPLOAD_NOTES.txt): pydantic-ai MUST be pinned.
+# The upstream repo declares ">=1.77.0", which today resolves to the 2.x line
+# where the MCP API was renamed and `pydantic_ai.mcp.MCPServerStreamableHTTP`
+# no longer exists — the agent fails on import. 1.80.0 is the last-known-good.
+
+pydantic-ai==1.80.0
+openai==2.47.0
+python-dotenv==1.2.2
+rich==15.0.0
+
+# Transitive deps whose drift would break the agent, locked to the verified set:
+pydantic==2.13.4
+mcp==1.28.1
+
+# Optional — ONLY needed if you run with API_HOST=azure (the default is 'github',
+# which needs neither of these). Uncomment to enable the Azure OpenAI provider:
+# azure-identity==1.25.3

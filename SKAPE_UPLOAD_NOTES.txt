@@ -1,0 +1,113 @@
+SKAPE UPLOAD NOTES — PydanticAI GitHub MCP Issue-Triage Agent
+=============================================================
+
+WHAT IT DOES
+  A PydanticAI agent that points at GitHub's hosted MCP endpoint, filters the
+  available tools to a triage set (list_issues, search_code, search_issues,
+  search_pull_requests), and returns a structured IssueProposal
+  (url, title, summary, should_close, reply_message) for an issue that could be
+  closed in a target repository.
+  Default task: find a closable issue in Azure-Samples/azure-search-openai-demo
+  (override with TARGET_REPO).
+
+FRAMEWORK / SHAPE
+  PydanticAI (structured output) + hosted GitHub MCP over streamable HTTP.
+  Single-file agent (main.py). Python only; no Node.
+
+ENTRYPOINT
+  python main.py
+  Exit codes: 0 = ok, 1 = runtime, 2 = config, 3 = auth, 4 = rate-limit,
+  5 = network/egress.
+
+ENVIRONMENT VARIABLES
+  API_HOST        LLM provider selector. Default: github.
+                  github -> GitHub Models (OpenAI-compatible); uses GITHUB_TOKEN
+                            as the LLM key too -> zero OpenAI spend. (PRIMARY)
+                  openai -> OpenAI.com. Needs OPENAI_API_KEY (+ optional
+                            OPENAI_MODEL, default gpt-4o). (FALLBACK)
+                  azure  -> Azure OpenAI. Needs AZURE_OPENAI_ENDPOINT +
+                            AZURE_OPENAI_CHAT_DEPLOYMENT and the azure-identity
+                            package (commented in requirements.txt).
+                  ollama -> local; needs OLLAMA_MODEL (+ optional OLLAMA_ENDPOINT).
+  GITHUB_TOKEN    REQUIRED in every mode — authenticates the GitHub MCP endpoint
+                  (https://api.githubcopilot.com/mcp/). In 'github' mode the SAME
+                  token also serves the LLM, so it must additionally carry GitHub
+                  Models access ('models:read').
+  GITHUB_MODEL    Optional. GitHub Models model id. Default: openai/gpt-4o.
+  OPENAI_API_KEY  Required only when API_HOST=openai.
+  OPENAI_MODEL    Optional (openai mode). Default: gpt-4o.
+  TARGET_REPO     Optional. owner/name to triage. Default:
+                  Azure-Samples/azure-search-openai-demo.
+
+CREDENTIALS / TOKEN SCOPES (Nango pipeline)
+  The primary path runs on ONE secret: GITHUB_TOKEN. It must have BOTH:
+    - GitHub Copilot entitlement — the hosted MCP endpoint
+      (api.githubcopilot.com/mcp/) is gated on Copilot access; and
+    - GitHub Models access ('models:read') — for the LLM in 'github' mode.
+  Recommended: a fine-grained PAT with 'models:read' on a Copilot-enabled
+  account. Note: a classic PAT with no scopes can authenticate to
+  api.github.com yet still be rejected by the MCP and/or Models endpoints —
+  confirm entitlement before relying on it.
+
+  >> VERIFY YOUR TOKEN BEFORE SUBMISSION <<
+  During packaging, the test token authenticated to api.github.com (valid) but
+  reported NO scopes (empty x-oauth-scopes), and a basic REST read of the target
+  repo's issues returned HTTP 403. That points to a token-configuration issue
+  (possibly the wrong PAT type — e.g. a scope-less classic PAT rather than a
+  fine-grained PAT with 'models:read' on a Copilot-enabled account). Before
+  submitting to Skape, confirm the token actually works end-to-end:
+    - GitHub Models:  curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+                        https://models.github.ai/inference/models   (expect 200)
+    - A local run of main.py that prints a populated IssueProposal.
+  If either fails with 401/403, reissue the token as a fine-grained PAT with
+  'models:read' on the Copilot-enabled account.
+
+RUNTIME DEPENDENCIES
+  Python 3.10+ (verified on 3.11). pip install -r requirements.txt.
+  No Node.js, no Docker, no system packages. The GitHub MCP server is REMOTE
+  (hosted) — nothing is spawned or containerized inside the sandbox.
+
+NETWORK EGRESS REQUIRED (allowlist these hosts)
+  api.githubcopilot.com    GitHub hosted MCP endpoint          (all modes)
+  models.github.ai         GitHub Models LLM inference         (API_HOST=github)
+  api.openai.com           OpenAI LLM                          (API_HOST=openai)
+  *.openai.azure.com       Azure OpenAI LLM                    (API_HOST=azure)
+  If egress is blocked, the agent exits 5 with a clear message — it does not
+  hang or print a traceback.
+
+DOCUMENTED CAVEATS
+  1) pydantic-ai MUST be pinned to 1.80.0.
+     The upstream example declares "pydantic-ai>=1.77.0". That range now
+     resolves to the 2.x line, where the MCP client API was renamed and
+     pydantic_ai.mcp.MCPServerStreamableHTTP no longer exists — the agent
+     crashes on import. requirements.txt pins 1.80.0 (last-known-good; matches
+     the upstream uv.lock). Do not relax this pin.
+
+  2) GitHub Models free-tier rate limits.
+     In 'github' mode you run on GitHub Models' free tier: roughly 15 requests
+     per minute and ~150 per day, and some models are lower (reasoning models
+     can be ~1 rpm). A single triage run makes several model+tool round-trips,
+     so back-to-back runs can hit HTTP 429. The agent reports this as exit 4
+     with a clear message. For sustained or paid throughput, use API_HOST=openai
+     with a real key.
+
+  3) Provider default differs from upstream.
+     Upstream defaults API_HOST=azure (needs Azure managed identity). This build
+     defaults to 'github' so it runs on a single GitHub token with no cloud
+     setup. azure-identity is imported lazily (azure path only) and left
+     commented in requirements.txt to keep the default install lean.
+
+SUCCESS CRITERIA
+  INFO logs show MCP tool calls (e.g. list_issues / search_issues against the
+  target repo), followed by a printed IssueProposal with all fields populated.
+
+RUNTIME VERIFICATION STATUS
+  - Dependency resolution + all agent imports: VERIFIED in a clean venv (3.11).
+  - Startup validation + error taxonomy (config / auth / rate-limit / network):
+    VERIFIED — each path exercised; failures produce one clean line + exit code,
+    no tracebacks.
+  - GITHUB_TOKEN validity: VERIFIED against api.github.com (token authenticates).
+  - Full live MCP + GitHub Models call: NOT EXECUTED in the build environment,
+    whose egress allowlist blocks api.githubcopilot.com and models.github.ai.
+    This is an environment limitation, not a code defect. Verify on first run in
+    an environment that permits the egress above (e.g. E2B / the Skape sandbox).
