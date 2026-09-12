@@ -1,4 +1,4 @@
-STEALTH STARTUP UPLOAD NOTES — PydanticAI GitHub MCP Issue-Triage Agent
+STEALTH STARTUP UPLOAD NOTES: PydanticAI GitHub MCP Issue-Triage Agent
 =============================================================
 
 WHAT IT DOES

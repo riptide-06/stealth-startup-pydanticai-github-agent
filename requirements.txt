@@ -1,4 +1,4 @@
-# Stealth Startup submission — PydanticAI GitHub MCP triage agent
+# Stealth Startup submission: PydanticAI GitHub MCP triage agent
 # Exact versions verified working together on Python 3.11 (min 3.10).
 #
 # IMPORTANT (see STEALTH_STARTUP_UPLOAD_NOTES.txt): pydantic-ai MUST be pinned.
