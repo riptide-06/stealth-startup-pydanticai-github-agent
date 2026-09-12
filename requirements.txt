@@ -1,7 +1,7 @@
-# Skape submission — PydanticAI GitHub MCP triage agent
+# Stealth Startup submission — PydanticAI GitHub MCP triage agent
 # Exact versions verified working together on Python 3.11 (min 3.10).
 #
-# IMPORTANT (see SKAPE_UPLOAD_NOTES.txt): pydantic-ai MUST be pinned.
+# IMPORTANT (see STEALTH_STARTUP_UPLOAD_NOTES.txt): pydantic-ai MUST be pinned.
 # The upstream repo declares ">=1.77.0", which today resolves to the 2.x line
 # where the MCP API was renamed and `pydantic_ai.mcp.MCPServerStreamableHTTP`
 # no longer exists — the agent fails on import. 1.80.0 is the last-known-good.

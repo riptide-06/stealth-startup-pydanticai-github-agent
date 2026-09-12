@@ -1,4 +1,4 @@
-SKAPE UPLOAD NOTES — PydanticAI GitHub MCP Issue-Triage Agent
+STEALTH STARTUP UPLOAD NOTES — PydanticAI GitHub MCP Issue-Triage Agent
 =============================================================
 
 WHAT IT DOES
@@ -55,7 +55,7 @@ CREDENTIALS / TOKEN SCOPES (Nango pipeline)
   repo's issues returned HTTP 403. That points to a token-configuration issue
   (possibly the wrong PAT type — e.g. a scope-less classic PAT rather than a
   fine-grained PAT with 'models:read' on a Copilot-enabled account). Before
-  submitting to Skape, confirm the token actually works end-to-end:
+  submitting to Stealth Startup, confirm the token actually works end-to-end:
     - GitHub Models:  curl -H "Authorization: Bearer $GITHUB_TOKEN" \
                         https://models.github.ai/inference/models   (expect 200)
     - A local run of main.py that prints a populated IssueProposal.
@@ -110,4 +110,4 @@ RUNTIME VERIFICATION STATUS
   - Full live MCP + GitHub Models call: NOT EXECUTED in the build environment,
     whose egress allowlist blocks api.githubcopilot.com and models.github.ai.
     This is an environment limitation, not a code defect. Verify on first run in
-    an environment that permits the egress above (e.g. E2B / the Skape sandbox).
+    an environment that permits the egress above (e.g. E2B / the Stealth Startup sandbox).

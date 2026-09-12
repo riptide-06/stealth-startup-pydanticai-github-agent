@@ -1,4 +1,4 @@
-"""PydanticAI + GitHub MCP issue-triage agent (Skape packaging).
+"""PydanticAI + GitHub MCP issue-triage agent (Stealth Startup packaging).
 
 This agent points a PydanticAI Agent at GitHub's hosted MCP endpoint
 (https://api.githubcopilot.com/mcp/), filters the available tools down to a

@@ -1,6 +1,6 @@
-# Skape GitHub triage agent
+# Stealth Startup GitHub triage agent
 
-An issue-triage agent I packaged for Skape, the AI agent marketplace from Securili. It is built with PydanticAI and GitHub's hosted Model Context Protocol (MCP) endpoint (`https://api.githubcopilot.com/mcp/`). It filters the GitHub MCP tools down to a triage set (`list_issues`, `search_code`, `search_issues`, `search_pull_requests`) and returns a structured `IssueProposal` (url, title, summary, should_close, reply_message) for an issue that could be closed in a target repository.
+An issue-triage agent I packaged for Stealth Startup, an AI agent marketplace. It is built with PydanticAI and GitHub's hosted Model Context Protocol (MCP) endpoint (`https://api.githubcopilot.com/mcp/`). It filters the GitHub MCP tools down to a triage set (`list_issues`, `search_code`, `search_issues`, `search_pull_requests`) and returns a structured `IssueProposal` (url, title, summary, should_close, reply_message) for an issue that could be closed in a target repository.
 
 The GitHub MCP server is remote, so nothing is spawned or containerized locally. Python only, no Node.
 
@@ -13,11 +13,11 @@ The upstream example is `pydanticai_mcp_github.py` from `Azure-Samples/python-ai
 - an error taxonomy mapped to exit codes (0 ok, 1 runtime, 2 config, 3 auth, 4 rate limit, 5 network), so a sandbox orchestrator can tell failure classes apart without parsing tracebacks;
 - a pin of `pydantic-ai` to 1.80.0, because the upstream range now resolves to the 2.x line, where the MCP client API was renamed and the import fails.
 
-`SKAPE_UPLOAD_NOTES.txt` documents the environment variables, the token entitlements, the egress allowlist, the caveats, and what was and was not verified.
+`STEALTH_STARTUP_UPLOAD_NOTES.txt` documents the environment variables, the token entitlements, the egress allowlist, the caveats, and what was and was not verified.
 
 ## How it was verified
 
-In a clean Python 3.11 virtual environment: dependency resolution and every import; each startup-validation and error path (config, auth, rate limit, network), each producing one clean line and the right exit code; and `GITHUB_TOKEN` validity against api.github.com. The full live MCP plus GitHub Models call was not executed in the build environment, because its egress allowlist blocked the two hosts; the notes flag this for first-run verification in the Skape sandbox.
+In a clean Python 3.11 virtual environment: dependency resolution and every import; each startup-validation and error path (config, auth, rate limit, network), each producing one clean line and the right exit code; and `GITHUB_TOKEN` validity against api.github.com. The full live MCP plus GitHub Models call was not executed in the build environment, because its egress allowlist blocked the two hosts; the notes flag this for first-run verification in the Stealth Startup sandbox.
 
 ## Requirements
 
